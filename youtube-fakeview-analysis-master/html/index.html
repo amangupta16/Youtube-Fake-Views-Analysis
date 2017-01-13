@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Innovators</title>
+    <!--<script src="https://www.youtube.com/iframe_api"></script>-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.16.0/moment.min.js"></script>
+    <script src="../node_modules/fingerprintjs/fingerprint.js"></script>
+
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-86900529-1', 'auto');
+      ga('require', 'youtube-video');
+      ga('send', 'event', 'youtube-video', 'click');
+      ga('send', 'pageview');
+    </script>
+
+    <link rel="stylesheet" href="../css/animate.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="site-header">
+        <div class="common home">Home</div>
+        <div class="common services">Services</div>
+        <div class="common about">About</div>
+        <div class="common contact">Contact</div>
+    </div>
+    <div class="container">
+		<div class="top">
+            <!--<div class="hidden">- because don't think of your website as a self-promotion machine. Think of it as a self-inventive machine</div>-->
+			<h1 id="title" class="hidden"><span id="logo"></span></h1>
+		</div>
+		<div class="login-box animated fadeInUp">
+			<div class="box-header">
+				<h2>Log In</h2>
+			</div>
+			<label for="username">Username</label>
+			<br/>
+			<input type="text" id="username">
+			<br/>
+			<label for="password">Password</label>
+			<br/>
+			<input type="password" id="password">
+			<br/>
+			<button id="submit" type="submit">Sign In</button>
+			<br/>
+			<a id="forgotPasswordClicked" href="#"><p class="small">Forgot your password?</p></a>
+            <div><p class="small">Don't have an account?</p><a href="#">  Sign Up</a></div>
+            <div class="adsbox" style="height: 3px; width: 100px"></div>
+        </div>
+	</div>
+    <div id="video-player"></div>
+    <div id ="video-layer">
+
+    </div>
+    <script>
+        var data_sent_timeout = false;
+        var startStop = true;
+        var startTime = Date.now();
+        var startTimeVideo = null;
+        var endTimeVideo = null;
+        var mouseMovementsOnBody = [];
+        var keyStrokesOnBody = [];
+        var mouseMovementsOnVideo = [];
+        var clickOnBody = [];
+        var clickOnVideo = [];
+        var isLoggedIntoFB;
+        var isLoggedIntoGoogle;
+        var isLoggedIntoTwitter;
+        var isLoggedIntoGooglePlus;
+        var isAdblockEnabled;
+        var canvasFingerPrint;
+
+        //checking facebook login
+        window.fbAsyncInit = function() {
+            FB.init({
+              appId      : '385190621821843',
+              status     : true,
+              cookie     : true,
+              xfbml      : true,
+              version    : 'v2.8'
+            });
+            FB.getLoginStatus(function(response){
+                if (response.status != "unknown")
+                {
+                    isLoggedIntoFB = true
+                }else{
+                    isLoggedIntoFB = false
+                }
+		    });
+        };
+        (function(d, s, id){
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {return;}
+            js = d.createElement(s); js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+        //Programmatically embed the youtube video
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        var player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('video-player', {
+                playerVars: {'controls': 0 },
+                height: '390',
+                width: '640',
+                videoId: 'EDaQJwf3EK0'
+            });
+        }
+
+        $(document).ready(function(){
+            //checkGoogleLogin
+            var googleImage =  new Image();
+            googleImage.onload = function () {
+                isLoggedIntoGoogle = true;
+            };
+            googleImage.onerror = function () {
+                isLoggedIntoGoogle = false;
+            };
+            googleImage.src = "https://accounts.google.com/CheckCookie?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png";
+
+            //check google plus login
+            var googlePlusImage = new Image();
+            googlePlusImage.onload = function() {
+                isLoggedIntoGooglePlus = true;
+            };
+            googlePlusImage.onerror = function() {
+                isLoggedIntoGooglePlus = false
+            };
+            googlePlusImage.src = "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0";
+
+            //check twitter login
+            var twitterImage =  new Image();
+            twitterImage.onload =  function() {
+                isLoggedIntoTwitter = true;
+            };
+            twitterImage.onerror = function () {
+                isLoggedIntoTwitter = false;
+            };
+            twitterImage.src = "https://twitter.com/login?redirect_after_login=%2Fimages%2Fspinner.gif";
+
+            //Generate new fingerPrint
+            canvasFingerPrint = new Fingerprint({canvas: true}).get();
+
+            //check adblock enabled
+            var adblockElement = $(".adsbox").offset();
+            if(adblockElement.top === 0 && adblockElement.left === 0) {
+                isAdblockEnabled = true;
+            }else {
+                isAdblockEnabled = false;
+            }
+
+            //Capture keyboard events on Body
+            $('body').on('keypress',function(event){
+                keyStrokesOnBody.push(event.key);
+            }).on('mousemove',function(event){
+                if(event.target.id === "video-layer"){
+                    mouseMovementsOnVideo.push({
+                        x: event['pageX'],
+                        y: event['pageY']
+                    })
+                }
+                else {
+                    mouseMovementsOnBody.push({
+                        x: event['pageX'],
+                        y: event['pageY']
+                    })
+                }
+
+            }).on('click', function(event){
+                if(event.target.id === "video-layer"){
+                    clickOnVideo.push({
+                        x: event.pageX || 'N/A',
+                        y: event.pageY || 'N/A'
+                    });
+                }
+                else {
+                    clickOnBody.push({
+                        x: event.pageX || 'N/A',
+                        y: event.pageY || 'N/A'
+                    })
+                }
+            });
+
+            //Programmatically playing and pausing the video//
+            $("#video-layer").click(function(event){
+                if(startStop) {
+                    if (!startTimeVideo){
+                        startTimeVideo = Date.now();
+                    }
+                    player.playVideo();
+                    startStop = false;
+                }
+                else{
+                    endTimeVideo = Date.now();
+                    player.pauseVideo();
+                    startStop = true;
+                }
+            });
+
+            window.setTimeout(function(){
+                console.log("Data sent by timeout");
+                data_sent_timeout = true;
+                var endTime = Date.now();
+                $.ajax({
+                    method: "POST",
+                    url: "/userData",
+                    async: false,
+                    data: {
+                        startTime: startTime,
+                        endTime: endTime,
+                        startTimeVideo: startTimeVideo,
+                        endTimeVideo: endTimeVideo || endTime,
+                        clickOnVideo: clickOnVideo,
+                        clickOnBody: clickOnBody,
+                        keyStrokesOnBody: keyStrokesOnBody,
+                        mouseMovementsOnBody: mouseMovementsOnBody,
+                        mouseMovementsOnVideo: mouseMovementsOnVideo,
+                        isLoggedIntoFB: isLoggedIntoFB,
+                        isLoggedIntoGoogle: isLoggedIntoGoogle,
+                        isLoggedIntoGooglePlus: isLoggedIntoGooglePlus,
+                        isLoggedIntoTwitter: isLoggedIntoTwitter,
+                        isAdblockEnabled: isAdblockEnabled,
+                        canvasFingerPrint: canvasFingerPrint,
+                        timeOut: data_sent_timeout
+                    }
+                }).done(function(data){
+                    console.log(data);
+                }).fail(function(err){
+                    console.log(err);
+                });
+            }, 120000);
+
+            $(window).on('beforeunload', function(){
+                if(!data_sent_timeout) {
+                    var endTime = Date.now();
+                    $.ajax({
+                        method: "POST",
+                        url: "/userData",
+                        async: false,
+                        data: {
+                            startTime: startTime,
+                            endTime: endTime,
+                            startTimeVideo: startTimeVideo,
+                            endTimeVideo: endTimeVideo || endTime,
+                            clickOnVideo: clickOnVideo,
+                            clickOnBody: clickOnBody,
+                            keyStrokesOnBody: keyStrokesOnBody,
+                            mouseMovementsOnBody: mouseMovementsOnBody,
+                            mouseMovementsOnVideo: mouseMovementsOnVideo,
+                            isLoggedIntoFB: isLoggedIntoFB,
+                            isLoggedIntoGoogle: isLoggedIntoGoogle,
+                            isLoggedIntoGooglePlus: isLoggedIntoGooglePlus,
+                            isLoggedIntoTwitter: isLoggedIntoTwitter,
+                            isAdblockEnabled: isAdblockEnabled,
+                            canvasFingerPrint: canvasFingerPrint,
+                            timeOut: data_sent_timeout
+                        }
+                    }).done(function(data){
+                        console.log(data);
+                    }).fail(function(err){
+                        console.log(err);
+                    });
+                }
+            });
+        });
+
+    </script>
+
+</body>
+</html>

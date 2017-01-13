@@ -1,0 +1,6 @@
+# Local development
+*.env
+*.dev
+.DS_Store
+.idea
+node_modules

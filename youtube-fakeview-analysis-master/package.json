@@ -1,0 +1,29 @@
+{
+  "name": "youtube-fakeview-analysis",
+  "version": "1.0.0",
+  "description": "This is node JS app to analyze youtube fake view analysis",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kmungale/youtube-fakeview-analysis.git"
+  },
+  "author": "Kaustubh Mungale",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kmungale/youtube-fakeview-analysis/issues"
+  },
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "4.13.3",
+    "fingerprintjs": "^0.5.3",
+    "jQuery": "^1.7.4",
+    "le_node": "^1.6.9",
+    "mongodb": "^2.2.11",
+    "mongoose": "^4.6.8",
+    "request": "2.78.*"
+  },
+  "homepage": "https://github.com/kmungale/youtube-fakeview-analysis#readme"
+}
